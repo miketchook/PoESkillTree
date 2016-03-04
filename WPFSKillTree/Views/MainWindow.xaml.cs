@@ -1389,8 +1389,11 @@ namespace POESKillTree.Views
                     });
                     if (_prePath != null && !node.IsMastery)
                     {
+                        var points = _prePath.Count;
+                        if(_prePath.Any(x => SkillTree.Skillnodes[x].IsAscendancyStart))
+                            points--;
                         sp.Children.Add(new Separator());
-                        sp.Children.Add(new TextBlock { Text = "Points to skill node: " + _prePath.Count });
+                        sp.Children.Add(new TextBlock { Text = "Points to skill node: " + points });
                     }
 
                     _sToolTip.Content = sp;
@@ -2295,7 +2298,7 @@ namespace POESKillTree.Views
                 Tree.HighlightedAttributes = null;
             }
 
-            Tree.DrawNodeBaseSurroundHighlight();
+            Tree.DrawTreeComparisonHighlight();
             UpdateUI();
         }
 
