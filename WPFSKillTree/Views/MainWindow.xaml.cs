@@ -600,9 +600,13 @@ namespace POESKillTree.Views
                         foreach (var attr in node.attributes)
                         {
                             var at = Regex.Replace(attr, @"[\p{P}\d\-+%]", String.Empty).Trim();
-                            var ns = SkillTree.Skillnodes.Values.Where(nd => nd.attributes.Where(att => new Regex(at, RegexOptions.IgnoreCase).IsMatch(att)).Count() > 0 || new Regex(at, RegexOptions.IgnoreCase).IsMatch(nd.Name) && !nd.IsMastery).ToList();
+                            var ns = SkillTree.Skillnodes.Values.Where(nd => nd.attributes.Where(att => 
+                                Regex.IsMatch(att, at, RegexOptions.IgnoreCase)).Count() > 0 || 
+                                Regex.IsMatch(nd.Name, at, RegexOptions.IgnoreCase) && !nd.IsMastery).ToList();
                             if (ns == null || ns.Count == 0)
-                                ns = SkillTree.Skillnodes.Values.Where(nd => nd.attributes.Where(att => new Regex(node.Name, RegexOptions.IgnoreCase).IsMatch(att)).Count() > 0 || new Regex(node.Name, RegexOptions.IgnoreCase).IsMatch(nd.Name) && !nd.IsMastery).ToList();
+                                ns = SkillTree.Skillnodes.Values.Where(nd => nd.attributes.Where(att =>
+                                    Regex.IsMatch(att, node.Name, RegexOptions.IgnoreCase)).Count() > 0 ||
+                                    Regex.IsMatch(nd.Name, node.Name, RegexOptions.IgnoreCase) && !nd.IsMastery).ToList();
 
                             toHighlight.AddRange(ns);
                         }
