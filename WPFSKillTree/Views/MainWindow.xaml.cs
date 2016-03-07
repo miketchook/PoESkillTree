@@ -568,6 +568,62 @@ namespace POESKillTree.Views
             }
         }
 
+        /// <summary>
+        /// Window_KeyDown
+        /// Added by MikeTChook for CTRL (LeftCtrl or RightCtrl) + HoverOverNode, to
+        /// highlight the tree with similar node attributes to the hovered-node.
+        /// ALT (LeftAlt or RightAlt) to clear the search text box and highlighted nodes.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (Tree == null)
+                return;
+
+            if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)) // Ctrl(left or right) + HoverOverNode
+            {
+                Point p = Mouse.GetPosition(zbSkillTreeBackground.Child);
+                Size size = zbSkillTreeBackground.Child.DesiredSize;
+                var v = new Vector2D(p.X, p.Y);
+
+                v = v * _multransform + _addtransform;
+                SkillNode node = null;
+
+                IEnumerable<KeyValuePair<ushort, SkillNode>> nodes =
+                SkillTree.Skillnodes.Where(n => ((n.Value.Position - v).Length < 50)).ToList();
+
+                if (nodes != null && nodes.Count() != 0)
+                    node = nodes.First().Value;
+
+                if (node != null && !node.IsMastery && node.attributes.Length != 0)
+                {
+                    var toHighlight = new List<SkillNode> { node };
+
+                    if (node.Attributes.Count != 0)
+                    {
+                        // Unhighlight the tree with similar node attributes
+                        foreach (var attr in node.attributes)
+                        {
+                            var at = Regex.Replace(attr, @"[\p{P}\d\-+%]", String.Empty).Trim();
+                            var ns = SkillTree.Skillnodes.Values.Where(nd => nd.attributes.Where(att => new Regex(at, RegexOptions.IgnoreCase).IsMatch(att)).Count() > 0 || new Regex(at, RegexOptions.IgnoreCase).IsMatch(nd.Name) && !nd.IsMastery).ToList();
+                            if (ns == null || ns.Count == 0)
+                                ns = SkillTree.Skillnodes.Values.Where(nd => nd.attributes.Where(att => new Regex(node.Name, RegexOptions.IgnoreCase).IsMatch(att)).Count() > 0 || new Regex(node.Name, RegexOptions.IgnoreCase).IsMatch(nd.Name) && !nd.IsMastery).ToList();
+
+                            toHighlight.AddRange(ns);
+                        }
+                    }
+
+                    Tree.DrawHighlights(toHighlight);
+                }
+            }
+            else if (Keyboard.IsKeyDown(Key.LeftAlt) || Keyboard.IsKeyDown(Key.RightAlt)) // ALT (left or right)
+            {
+                // Clear search text box and highlighted nodes.
+                ClearSearch();
+            }
+        }
+
         #endregion
 
         #region LoadingWindow
