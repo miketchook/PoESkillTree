@@ -566,7 +566,7 @@ namespace POESKillTree.Views
         /// Window_KeyDown
         /// Added by MikeTChook for CTRL (LeftCtrl or RightCtrl) + HoverOverNode, to
         /// highlight the tree with similar node attributes to the hovered-node.
-        /// ALT (LeftAlt or RightAlt) to clear the search text box and highlighted nodes.
+        /// SHIFT to clear highlighted nodes.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -596,7 +596,7 @@ namespace POESKillTree.Views
 
                     if (node.Attributes.Count != 0)
                     {
-                        // Unhighlight the tree with similar node attributes
+                        // Highlight the tree with similar node attributes
                         foreach (var attr in node.attributes)
                         {
                             var at = Regex.Replace(attr, @"[\p{P}\d\-+%]", String.Empty).Trim();
@@ -610,11 +610,6 @@ namespace POESKillTree.Views
 
                     Tree.DrawHighlights(toHighlight);
                 }
-            }
-            else if (Keyboard.IsKeyDown(Key.LeftAlt) || Keyboard.IsKeyDown(Key.RightAlt)) // ALT (left or right)
-            {
-                // Clear search text box and highlighted nodes.
-                ClearSearch();
             }
         }
 
