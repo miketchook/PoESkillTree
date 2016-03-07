@@ -262,8 +262,8 @@ namespace POESKillTree.SkillTreeFiles
                         dc.DrawRectangle(brush, null,
                             new Rect(
                                 pos -
-                                new Vector2D(bitmap.PixelWidth * .5, bitmap.PixelHeight * .5),
-                                new Size(bitmap.PixelWidth, bitmap.PixelHeight)));
+                                new Vector2D(bitmap.PixelWidth * 1.25, bitmap.PixelHeight * 1.25),
+                                new Size(bitmap.PixelWidth * 2.5, bitmap.PixelHeight * 2.5)));
                         AscendancyClasses.Class currentClass = ascendancyClasses.GetClass(node.Value.ascendancyName);
                         if(currentClass != null)
                         {
@@ -277,11 +277,11 @@ namespace POESKillTree.SkillTreeFiles
                                     new CultureInfo("en-us"), FlowDirection.LeftToRight,
                                     new Typeface(new FontFamily("Arial"), FontStyles.Italic, FontWeights.Regular,
                                     new FontStretch()),
-                                    40, textBrush);
+                                    42, textBrush);
                             Point textPos =
                                 new Point(
-                                    pos.X - (bitmap.PixelWidth * .5) + currentClass.flavourTextRect.Left, 
-                                    pos.Y - (bitmap.PixelHeight * .5) + currentClass.flavourTextRect.Top);
+                                    (pos.X - (bitmap.PixelWidth * 1.25)) + currentClass.flavourTextRect.X, 
+                                    (pos.Y - (bitmap.PixelHeight * 1.25)) + currentClass.flavourTextRect.Y);
                             text.TextAlignment = TextAlignment.Left;
                             dc.DrawText(text, textPos);
                         }
@@ -471,10 +471,10 @@ namespace POESKillTree.SkillTreeFiles
                         else if (Skillnodes[skillNode].ascendancyName != null && Skillnodes[skillNode].IsNotable)
                         {
                             dc.DrawRectangle(NodeSurroundHighlightBrush[5].Value, null,
-                                new Rect((int)pos.X - NodeSurroundHighlightBrush[5].Key.Width * factor,
-                                    (int)pos.Y - NodeSurroundHighlightBrush[5].Key.Height * factor,
-                                    NodeSurroundHighlightBrush[5].Key.Width * 2 * factor,
-                                    NodeSurroundHighlightBrush[5].Key.Height * 2 * factor));
+                                new Rect((int)pos.X - NodeSurroundHighlightBrush[5].Key.Width * .875 * factor,
+                                    (int)pos.Y - NodeSurroundHighlightBrush[5].Key.Height * .875 * factor,
+                                    NodeSurroundHighlightBrush[5].Key.Width * 1.75 * factor,
+                                    NodeSurroundHighlightBrush[5].Key.Height * 1.75 * factor));
                         }
                         else if (Skillnodes[skillNode].ascendancyName != null)
                         {
@@ -564,10 +564,10 @@ namespace POESKillTree.SkillTreeFiles
                     else if (Skillnodes[skillNode].ascendancyName != null && Skillnodes[skillNode].IsNotable)
                     {
                         dc.DrawRectangle(NodeSurroundBrush[10].Value, null,
-                            new Rect((int)pos.X - NodeSurroundBrush[10].Key.Width,
-                                (int)pos.Y - NodeSurroundBrush[10].Key.Height,
-                                NodeSurroundBrush[10].Key.Width * 2,
-                                NodeSurroundBrush[10].Key.Height * 2));
+                            new Rect((int)pos.X - NodeSurroundBrush[10].Key.Width * .875,
+                                (int)pos.Y - NodeSurroundBrush[10].Key.Height * .875,
+                                NodeSurroundBrush[10].Key.Width * 1.75,
+                                NodeSurroundBrush[10].Key.Height * 1.75));
                     }
                     else if (Skillnodes[skillNode].ascendancyName != null)
                     {
@@ -630,10 +630,10 @@ namespace POESKillTree.SkillTreeFiles
                     else if (Skillnodes[skillNode].ascendancyName != null && Skillnodes[skillNode].IsNotable)
                     {
                         dc.DrawRectangle(NodeSurroundBrush[11].Value, null,
-                            new Rect((int)pos.X - NodeSurroundBrush[11].Key.Width,
-                                (int)pos.Y - NodeSurroundBrush[11].Key.Height,
-                                NodeSurroundBrush[11].Key.Width * 2,
-                                NodeSurroundBrush[11].Key.Height * 2));
+                            new Rect((int)pos.X - NodeSurroundBrush[11].Key.Width * .875,
+                                (int)pos.Y - NodeSurroundBrush[11].Key.Height * .875,
+                                NodeSurroundBrush[11].Key.Width * 1.75,
+                                NodeSurroundBrush[11].Key.Height * 1.75));
                     }
                     else if (Skillnodes[skillNode].ascendancyName != null)
                     {

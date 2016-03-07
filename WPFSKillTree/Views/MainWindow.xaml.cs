@@ -255,12 +255,6 @@ namespace POESKillTree.Views
             {
                 attributelist.Add(o.ToString());
             }
-            //Error - at least one attribute must be selected
-            if (attributelist.Count == 0)
-            {
-                Popup.Error(L10n.Message("No attributes selected for new group."));
-                return;
-            }
 
             //Build and show form to enter group name
             var formGroupName = new FormChooseGroupName();
@@ -271,7 +265,7 @@ namespace POESKillTree.Views
                 string name = formGroupName.GetGroupName();
                 if (_attributeGroups.AttributeGroups.ContainsKey(name))
                 {
-                    Popup.Error(L10n.Message("A group with that name already exists."));
+                    Popup.Info(L10n.Message("A group with that name already exists."));
                     return;
                 }
 
@@ -847,7 +841,7 @@ namespace POESKillTree.Views
                     }
                     catch (Exception ex)
                     {
-                        if (Directory.Exists(appDataPath + "Data"))
+                        if (Directory.Exists(appDataPath + "Data") && Directory.Exists(appDataPath + "DataBackup"))
                             Directory.Delete(appDataPath + "Data", true);
                         try
                         {
@@ -1435,7 +1429,6 @@ namespace POESKillTree.Views
                 var tooltip = node.Name;
                 if (node.Attributes.Count != 0)
                     tooltip += "\n" + node.attributes.Aggregate((s1, s2) => s1 + "\n" + s2);
-
                 if (!(_sToolTip.IsOpen && _lasttooltip == tooltip))
                 {
                     var sp = new StackPanel();
@@ -1443,6 +1436,11 @@ namespace POESKillTree.Views
                     {
                         Text = tooltip
                     });
+                    if(node.reminderText != null)
+                    {
+                        sp.Children.Add(new Separator());
+                        sp.Children.Add(new TextBlock { Text = node.reminderText.Aggregate((s1, s2) => s1 + '\n' + s2) });
+                    }
                     if (_prePath != null && !node.IsMastery)
                     {
                         var points = _prePath.Count;
@@ -1834,7 +1832,7 @@ namespace POESKillTree.Views
                         LoadBuildFromUrl();
                     }
                     else
-                        throw new Exception();
+                        throw new Exception("The URL you are trying to load is invalid.");
                 }
                 else if (tbSkillURL.Text.Contains("tinyurl.com") || tbSkillURL.Text.Contains("poeurl.com"))
                 {
@@ -1849,15 +1847,17 @@ namespace POESKillTree.Views
                         await AwaitAsyncTask(L10n.Message("Resolving shortened tree address"),
                             new HttpClient().GetAsync(skillUrl, HttpCompletionOption.ResponseHeadersRead));
                     response.EnsureSuccessStatusCode();
-                    tbSkillURL.Text = response.RequestMessage.RequestUri.ToString();
-
+                    if (Regex.IsMatch(response.RequestMessage.RequestUri.ToString(), SkillTree.TreeRegex))
+                        tbSkillURL.Text = response.RequestMessage.RequestUri.ToString();
+                    else
+                        throw new Exception("The URL you are trying to load is invalid.");
                     LoadBuildFromUrl();
                 }
                 else
                 {
                     if (tbSkillURL.Text.Contains("characterName") || tbSkillURL.Text.Contains("accountName"))
                         tbSkillURL.Text = Regex.Replace(tbSkillURL.Text, @"\?.*", "");
-                    tbSkillURL.Text = Regex.Replace(tbSkillURL.Text, @"(http(|s):\/\/|).*?\/(character\/|passive-skill-tree\/|fullscreen-passive-skill-tree\/|#)", SkillTree.TreeAddress);
+                    tbSkillURL.Text = Regex.Replace(tbSkillURL.Text, SkillTree.TreeRegex, SkillTree.TreeAddress);
                     Tree.LoadFromURL(tbSkillURL.Text);
                 }
 
@@ -1878,6 +1878,7 @@ namespace POESKillTree.Views
             }
             catch (Exception ex)
             {
+                tbSkillURL.Text = Tree.SaveToURL();
                 Popup.Error(L10n.Message("An error occurred while attempting to load Skill tree from URL."), ex.Message);
             }
         }
@@ -2334,7 +2335,8 @@ namespace POESKillTree.Views
                 var build = (PoEBuild)lvSavedBuilds.SelectedItem;
                 HashSet<ushort> nodes;
                 int ctype;
-                SkillTree.DecodeURL(build.Url, out nodes, out ctype);
+                int atype;
+                SkillTree.DecodeURL(build.Url, out nodes, out ctype, out atype);
 
                 Tree.HighlightedNodes = nodes;
                 int level = 0;

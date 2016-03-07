@@ -37,6 +37,7 @@ namespace POESKillTree.SkillTreeFiles
         public static readonly float DexPerAcc = 0.5f;
         public static readonly float DexPerEvas = 5; //%
         public static readonly string TreeAddress = "https://www.pathofexile.com/passive-skill-tree/";
+        public static readonly string TreeRegex = @"(http(|s):\/\/|).*?\/(character\/|passive-skill-tree\/|fullscreen-passive-skill-tree\/|#|poeplanner.com\/)";
 
         /// <summary>
         /// Nodes with an attribute matching this regex are one of the "Path of the ..." nodes connection Scion
@@ -226,6 +227,8 @@ namespace POESKillTree.SkillTreeFiles
         public HashSet<ushort> HighlightedNodes = new HashSet<ushort>();
 
         private int _chartype;
+
+        private int _asctype;
         
         public static int UndefinedLevel { get { return 0; } }
 
@@ -234,7 +237,7 @@ namespace POESKillTree.SkillTreeFiles
         private int _level = UndefinedLevel;
 
         private static AscendancyClasses _asendancyClasses;
-
+        
         public AscendancyClasses ascendancyClasses 
         {
             get { return SkillTree._asendancyClasses; } 
@@ -335,15 +338,13 @@ namespace POESKillTree.SkillTreeFiles
                         foreach (KeyValuePair<int, classes> asc in ascClass.Value.classes)
                         {
                             AscendancyClasses.Class newClass = new AscendancyClasses.Class();
+                            newClass.order = asc.Key;
                             newClass.displayName = asc.Value.displayName;
                             newClass.name = asc.Value.name;
                             newClass.flavourText = asc.Value.flavourText;
                             newClass.flavourTextColour = asc.Value.flavourTextColour.Split(',').Select(int.Parse).ToArray();
                             int[] tempPointList = asc.Value.flavourTextRect.Split(',').Select(int.Parse).ToArray();
-                            newClass.flavourTextRect = 
-                                new Rect2D(
-                                    new Vector2D(tempPointList[0], tempPointList[1]),
-                                    new Vector2D(tempPointList[2], tempPointList[3]));
+                            newClass.flavourTextRect = new Vector2D(tempPointList[0], tempPointList[1]);
                             classes.Add(newClass);
 
                         }
@@ -413,6 +414,7 @@ namespace POESKillTree.SkillTreeFiles
                         passivePointsGranted = nd.passivePointsGranted,
                         ascendancyName = nd.ascendancyName,
                         IsAscendancyStart = nd.isAscendancyStart,
+                        reminderText = nd.reminderText
                     });
                     if (_rootNodeList.Contains(nd.id))
                     {
@@ -598,6 +600,18 @@ namespace POESKillTree.SkillTreeFiles
             }
         }
 
+        public int AscType
+        {
+            get { return _asctype; }
+            set
+            {
+                SetProperty(ref _asctype, value, () =>
+                    {
+                        _asctype = value;
+                    });
+            }
+        }
+
         public Dictionary<string, List<float>> HighlightedAttributes;
 
         public Dictionary<string, List<float>> SelectedAttributes
@@ -727,14 +741,20 @@ namespace POESKillTree.SkillTreeFiles
             {
                 optsobj = File.ReadAllText(optsFile);
             }
-
             if (optsobj == "")
             {
-                //TODO: Pull once data is officially released
-                var currentOptsData = "{\"passiveSkillTreeData\": \"passiveSkillTreeData\", \"ascClasses\": {\"1\":{\"name\":\"Marauder\",\"classes\":{\"1\":{\"name\":\"Juggernaut\",\"displayName\":\"Juggernaut\",\"flavourText\":\" What divides the conqueror \\n from the conquered? Perseverance.\",\"flavourTextRect\":\"250,150,1063,436\",\"flavourTextColour\":\"175,90,50\"},\"2\":{\"name\":\"Berserker\",\"displayName\":\"Berserker\",\"flavourText\":\"The savage path is \\nalways swift and sure.\",\"flavourTextRect\":\"760,415,976,429\",\"flavourTextColour\":\"175,90,50\"},\"3\":{\"name\":\"Chieftain\",\"displayName\":\"Chieftain\",\"flavourText\":\"     The Ancestors speak \\nthrough your clenched fists.\",\"flavourTextRect\":\"250,175,976,429\",\"flavourTextColour\":\"175,90,50\"}}},\"2\":{\"name\":\"Ranger\",\"classes\":{\"1\":{\"name\":\"Raider\",\"displayName\":\"Raider\",\"flavourText\":\"The huntress has much to learn \\n from the wiles of her quarry.\",\"flavourTextRect\":\"365,965,900,1250\",\"flavourTextColour\":\"124,179,118\"},\"2\":{\"name\":\"Deadeye\",\"displayName\":\"Deadeye\",\"flavourText\":\"A woman can change the world \\nwith a single, well-placed arrow.\",\"flavourTextRect\":\"365,965,900,1250\",\"flavourTextColour\":\"124,179,118\"},\"3\":{\"name\":\"Pathfinder\",\"displayName\":\"Pathfinder\",\"flavourText\":\"There are venoms and virtues aplenty in \\n the wilds, if you know where to look.\",\"flavourTextRect\":\"265,975,900,1250\",\"flavourTextColour\":\"124,179,118\"}}},\"3\":{\"name\":\"Witch\",\"classes\":{\"1\":{\"name\":\"Occultist\",\"displayName\":\"Occultist\",\"flavourText\":\" Throw off the chains\\nof fear and embrace that\\n which was forbidden.\",\"flavourTextRect\":\"735,520,976,429\",\"flavourTextColour\":\"154,195,201\"},\"2\":{\"name\":\"Elementalist\",\"displayName\":\"Elementalist\",\"flavourText\":\"Feed a storm with savage intent \\nand not even the strongest walls\\nwill hold it back.\",\"flavourTextRect\":\"139,475,517,768\",\"flavourTextColour\":\"139,113,146\"},\"3\":{\"name\":\"Necromancer\",\"displayName\":\"Necromancer\",\"flavourText\":\"Embrace the serene\\npower that is undeath.\",\"flavourTextRect\":\"745,510,1000,1000\",\"flavourTextColour\":\"154,195,201\"}}},\"4\":{\"name\":\"Duelist\",\"classes\":{\"1\":{\"name\":\"Slayer\",\"displayName\":\"Slayer\",\"flavourText\":\" No judge. No jury.\\nJust the executioner.\",\"flavourTextRect\":\"470,310,976,429\",\"flavourTextColour\":\"150,175,200\"},\"2\":{\"name\":\"Gladiator\",\"displayName\":\"Gladiator\",\"flavourText\":\"Raise your hand to the \\nroaring crowd and pledge \\nyour allegiance to glory.\",\"flavourTextRect\":\"670,395,976,429\",\"flavourTextColour\":\"150,175,200\"},\"3\":{\"name\":\"Champion\",\"displayName\":\"Champion\",\"flavourText\":\"Champion that which \\n you love. He who fights\\n for nothing, dies\\n for nothing.\",\"flavourTextRect\":\"735,550,976,429\",\"flavourTextColour\":\"150,175,200\"}}},\"5\":{\"name\":\"Templar\",\"classes\":{\"1\":{\"name\":\"Inquisitor\",\"displayName\":\"Inquisitor\",\"flavourText\":\" Truth is elusive, yet God has\\nprovided us with all the tools \\n necessary to find it.\",\"flavourTextRect\":\"335,940,976,429\",\"flavourTextColour\":\"114,149,161\"},\"2\":{\"name\":\"Hierophant\",\"displayName\":\"Hierophant\",\"flavourText\":\"Drink deeply from God's\\n chalice, for the faithful\\n will never find it empty.\",\"flavourTextRect\":\"150,760,976,429\",\"flavourTextColour\":\"114,149,161\"},\"3\":{\"name\":\"Guardian\",\"displayName\":\"Guardian\",\"flavourText\":\"When bound by faith\\n and respect, the flock\\n will overwhelm the wolf.\",\"flavourTextRect\":\"170,780,976,429\",\"flavourTextColour\":\"114,149,161\"}}},\"6\":{\"name\":\"Shadow\",\"classes\":{\"1\":{\"name\":\"Assassin\",\"displayName\":\"Assassin\",\"flavourText\":\"Death is a banquet. \\n It's up to the murderer \\n to write the menu.\",\"flavourTextRect\":\"505,845,976,429\",\"flavourTextColour\":\"134,149,121\"},\"2\":{\"name\":\"Trickster\",\"displayName\":\"Trickster\",\"flavourText\":\"  Everyone knows how to die. \\n Some just need a little nudge \\nto get them started.\",\"flavourTextRect\":\"315,150,976,429\",\"flavourTextColour\":\"114,149,161\"},\"3\":{\"name\":\"Saboteur\",\"displayName\":\"Saboteur\",\"flavourText\":\"The artist need not be present \\n to make a lasting impression.\",\"flavourTextRect\":\"355,970,976,429\",\"flavourTextColour\":\"114,129,141\"}}},\"0\":{\"name\":\"Scion\",\"classes\":{\"1\":{\"name\":\"Ascendant\",\"displayName\":\"Ascendant\",\"flavourText\":\"\",\"flavourTextRect\":\"305,925,976,429\",\"flavourTextColour\":\"90,90,90\"}}}}, \"zoomLevels\": [0.1246,0.2109,0.2972,0.3835], \"height\": 767, \"startClass\": 3, \"fullScreen\": false}";
-                File.WriteAllText(optsFile, currentOptsData);
+                displayProgress = (start != null && update != null && finish != null);
+                if (displayProgress)
+                    start(L10n.Message("Downloading Ascendancy Classes"));
+                string uriString = SkillTree.TreeAddress;
+                var req = (HttpWebRequest)WebRequest.Create(uriString);
+                var resp = (HttpWebResponse)req.GetResponse();
+                string code = new StreamReader(resp.GetResponseStream()).ReadToEnd();
+                var regex = new Regex(@"ascClasses:.*");
+                optsobj = regex.Match(code).Value.Replace("ascClasses", "{ \"ascClasses\"");
+                optsobj = optsobj.Substring(0, optsobj.Length - 1) + "}";
+                File.WriteAllText(optsFile, optsobj);
             }
-
             if (displayProgress)
                 update(25, 100);
             var skillTree = new SkillTree(skilltreeobj, optsobj, displayProgress, update);
@@ -750,9 +770,10 @@ namespace POESKillTree.SkillTreeFiles
 
             //SkilledNodes.Remove(nodeId);
 
+            var charStart = GetCharNodeId();
             var front = new HashSet<ushort>();
-            front.Add(SkilledNodes.First());
-            foreach (SkillNode i in Skillnodes[SkilledNodes.First()].Neighbor)
+            front.Add(charStart);
+            foreach (SkillNode i in Skillnodes[charStart].Neighbor)
                 if (SkilledNodes.Contains(i.Id))
                     front.Add(i.Id);
             var skilled_reachable = new HashSet<ushort>(front);
@@ -781,9 +802,10 @@ namespace POESKillTree.SkillTreeFiles
 
             SkilledNodes.Remove(nodeId);
 
+            var charStart = GetCharNodeId();
             var front = new HashSet<ushort>();
-            front.Add(SkilledNodes.First());
-            foreach (SkillNode i in Skillnodes[SkilledNodes.First()].Neighbor)
+            front.Add(charStart);
+            foreach (SkillNode i in Skillnodes[charStart].Neighbor)
                 if (SkilledNodes.Contains(i.Id))
                     front.Add(i.Id);
 
@@ -856,7 +878,7 @@ namespace POESKillTree.SkillTreeFiles
                         continue;
                     if (Skillnodes[newNode].IsMastery)
                         continue;
-                    if (Skillnodes[newNode].attributes.Any(s => AscendantClassStartRegex.IsMatch(s)))
+                    if (IsAscendantClassStartNode(newNode))
                         continue;
                     distance.Add(connection, dis + 1);
                     newOnes.Enqueue(connection);
@@ -883,6 +905,22 @@ namespace POESKillTree.SkillTreeFiles
             }
             result.Reverse();
             return result;
+        }
+
+        /// <summary>
+        /// Returns true iff node is a Ascendant "Path of the ..." node.
+        /// </summary>
+        private static bool IsAscendantClassStartNode(ushort node)
+        {
+            return IsAscendantClassStartNode(Skillnodes[node]);
+        }
+
+        /// <summary>
+        /// Returns true iff node is a Ascendant "Path of the ..." node.
+        /// </summary>
+        public static bool IsAscendantClassStartNode(SkillNode node)
+        {
+            return node.attributes.Any(s => AscendantClassStartRegex.IsMatch(s));
         }
 
         /// <summary>
@@ -1080,7 +1118,7 @@ namespace POESKillTree.SkillTreeFiles
         }
 
 
-        public static void DecodeURL(string url, out HashSet<ushort> skillednodes, out int chartype)
+        public static void DecodeURL(string url, out HashSet<ushort> skillednodes, out int chartype, out int asctype)
         {
             skillednodes = new HashSet<ushort>();
             url = Regex.Replace(url, @"\t| |\n|\r", "");
@@ -1089,23 +1127,30 @@ namespace POESKillTree.SkillTreeFiles
                     .Replace("-", "+")
                     .Replace("_", "/");
             byte[] decbuff = Convert.FromBase64String(s);
-            int i = BitConverter.ToInt32(new[] { decbuff[3], decbuff[2], decbuff[1], decbuff[1] }, 0);
+            int i = BitConverter.ToInt32(new[] { decbuff[3], decbuff[2], decbuff[1], decbuff[0] }, 0);
             byte b = decbuff[4];
             long j = 0L;
-            if (i > 0)
-                j = decbuff[5];
+            byte asc = decbuff[5];
+            if (decbuff.Length >= 7)
+                j = decbuff[6];
             var nodes = new List<UInt16>();
-            for (int k = 6; k < decbuff.Length; k += 2)
+            for (int k = (i > 3 ? 7 : 6); k < decbuff.Length; k += 2)
             {
                 byte[] dbff = { decbuff[k + 1], decbuff[k + 0] };
                 if (Skillnodes.Keys.Contains(BitConverter.ToUInt16(dbff, 0)))
                     nodes.Add((BitConverter.ToUInt16(dbff, 0)));
             }
             chartype = b;
-
+            asctype = asc;
 
             SkillNode startnode = Skillnodes.First(nd => nd.Value.Name.ToUpperInvariant() == CharName[b]).Value;
             skillednodes.Add(startnode.Id);
+            if (asc > 0)
+            {
+                SkillNode ascNode = Skillnodes.First(nd => nd.Value.ascendancyName == _asendancyClasses.GetClassName(CharName[b], asc) && nd.Value.IsAscendancyStart).Value;
+                skillednodes.Add(ascNode.Id);
+            }
+
             foreach (ushort node in nodes)
             {
                 skillednodes.Add(node);
@@ -1117,9 +1162,11 @@ namespace POESKillTree.SkillTreeFiles
         public void LoadFromURL(string url)
         {
             int b;
+            int asc;
             HashSet<ushort> snodes;
-            SkillTree.DecodeURL(url, out snodes, out b);
+            SkillTree.DecodeURL(url, out snodes, out b, out asc);
             Chartype = b;
+            AscType = asc;
             SkilledNodes = snodes;
             
             UpdateAvailNodes();
@@ -1135,31 +1182,41 @@ namespace POESKillTree.SkillTreeFiles
 
         public string SaveToURL()
         {
-            var b = new byte[(SkilledNodes.Count - 1) * 2];
-            var CharacterURL = GetCharacterURL((byte) Chartype);
-            int pos = 0;
+            var b = new byte[7 + (SkilledNodes.Count - 1) * 2];
+            AscType = ascendancyClasses.GetClassNumber(GetAscendancyClass(SkilledNodes));
+            var b2 = GetCharacterBytes((byte)Chartype, (byte) AscType);
+            for (var i = 0; i < b2.Length; i++)
+                b[i] = b2[i];
+            int pos = 7;
             foreach (ushort inn in SkilledNodes)
             {
                 if (CharName.Contains(Skillnodes[inn].Name.ToUpperInvariant()))
+                    continue;
+                if (Skillnodes[inn].IsAscendancyStart)
                     continue;
                 byte[] dbff = BitConverter.GetBytes((Int16)inn);
                 b[pos++] = dbff[1];
                 b[pos++] = dbff[0];
             }
-            return TreeAddress + CharacterURL + Convert.ToBase64String(b).Replace("/", "_").Replace("+", "-");
+            return TreeAddress + Convert.ToBase64String(b).Replace("/", "_").Replace("+", "-");
         }
 
-        public static string GetCharacterURL(byte CharTypeByte = 0)
+        public static string GetCharacterURL(byte CharTypeByte = 0, byte AscTypeByte = 0)
         {
-            var b = new byte[6];
-            byte[] b2 = BitConverter.GetBytes(3); //skilltree version
-            for (var i = 0; i < b2.Length; i++)
-            {
-                b[i] = b2[(b2.Length - 1) - i];
-            }
-            b[4] = (byte)(CharTypeByte);
-            b[5] = 0;
+            var b = GetCharacterBytes(CharTypeByte, AscTypeByte);
             return Convert.ToBase64String(b).Replace("/", "_").Replace("+", "-");
+        }
+
+        public static byte[] GetCharacterBytes(byte CharTypeByte = 0, byte AscTypeByte = 0)
+        {
+            var b = new byte[7];
+            byte[] b2 = BitConverter.GetBytes(4); //skilltree version
+            for (var i = 0; i < b2.Length; i++)
+                b[i] = b2[(b2.Length - 1) - i];
+            b[4] = (byte)(CharTypeByte);
+            b[5] = (byte)(AscTypeByte); //ascedancy class
+            b[6] = 0;
+            return b;
         }
 
         /// <summary>
@@ -1224,6 +1281,19 @@ namespace POESKillTree.SkillTreeFiles
         public ushort GetCharNodeId()
         {
             return (ushort)rootNodeClassDictionary[CharName[_chartype]];
+        }
+
+        public string GetAscendancyClass(HashSet<ushort> skilledNodes)
+        {
+            HashSet<ushort> availNodes = new HashSet<ushort>();
+
+            foreach (ushort inode in skilledNodes)
+            {
+                SkillNode node = Skillnodes[inode];
+                if (node.ascendancyName != null)
+                    return node.ascendancyName;
+            }
+            return null;
         }
 
         /// <summary>
